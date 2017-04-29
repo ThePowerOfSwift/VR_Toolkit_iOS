@@ -9,10 +9,6 @@
 import UIKit
 import SceneKit
 import CoreMotion
-import AVFoundation
-import Foundation
-import Darwin
-import CoreGraphics
 
 // MARK: Custom Node Class
 class NodeClass: SCNNode {
@@ -20,7 +16,7 @@ class NodeClass: SCNNode {
     var color2:UIColor?
     var firstColor:Bool?
     
-    func initWithColors(c1: UIColor, c2: UIColor){
+    func initWithColors(_ c1: UIColor, c2: UIColor){
         self.color1 = c1
         self.color2 = c2
     }
@@ -29,8 +25,8 @@ class NodeClass: SCNNode {
 //MARK: View Controller
 class ViewController: UIViewController, SCNSceneRendererDelegate {
 
-    @IBOutlet weak var leftSceneView: SCNView!
-    @IBOutlet weak var rightSceneView: SCNView!
+    var leftSceneView : SCNView!
+    var rightSceneView : SCNView!
     
     var scene : SCNScene?
     
@@ -54,6 +50,14 @@ class ViewController: UIViewController, SCNSceneRendererDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         //In viewDidLoad we initialize the 3D Space and Cameras
+        
+        leftSceneView = SCNView()
+        leftSceneView.translatesAutoresizingMaskIntoConstraints = false
+        self.view.addSubview(leftSceneView)
+        
+        rightSceneView = SCNView()
+        rightSceneView.translatesAutoresizingMaskIntoConstraints = false
+        self.view.addSubview(rightSceneView)
         
         // Create Scene
         scene = SCNScene(named: "Scene.scn")
@@ -105,12 +109,12 @@ class ViewController: UIViewController, SCNSceneRendererDelegate {
         // Respond to user head movement. Refreshes the position of the camera 60 times per second.
         motionManager = CMMotionManager()
         motionManager?.deviceMotionUpdateInterval = 1.0 / 60.0
-        motionManager?.startDeviceMotionUpdatesUsingReferenceFrame(CMAttitudeReferenceFrame.XArbitraryZVertical)
+        motionManager?.startDeviceMotionUpdates(using: CMAttitudeReferenceFrame.xArbitraryZVertical)
         
         leftSceneView?.delegate = self
         
-        leftSceneView?.playing = true
-        rightSceneView?.playing = true
+        leftSceneView?.isPlaying = true
+        rightSceneView?.isPlaying = true
         
         createviewFinder()
         displayInteractiveNodes()
@@ -158,11 +162,11 @@ class ViewController: UIViewController, SCNSceneRendererDelegate {
         viewFinder3.materials = [ material3 ]
     }
     
-    func updateViewFinder(isLoading: Bool) {
+    func updateViewFinder(_ isLoading: Bool) {
         
         // Update the viewFinder Nodes
         if isLoading {
-            self.viewfinderNode2!.hidden = false
+            self.viewfinderNode2!.isHidden = false
             self.loadingRadius = self.loadingRadius + 0.0005
             self.viewfinderNode1!.geometry?.setValue(CGFloat(self.loadingRadius!), forKey: "radius")
             self.viewfinderNode1!.geometry?.firstMaterial!.diffuse.contents = UIColor(red: 42/255.0, green: 128/255.0, blue: 185/255.0, alpha: 1)
@@ -171,7 +175,7 @@ class ViewController: UIViewController, SCNSceneRendererDelegate {
                 self.loadingRadius = 0.03
             }
         } else {
-            self.viewfinderNode2?.hidden = true
+            self.viewfinderNode2?.isHidden = true
             self.loadingRadius = 0.03
             self.viewfinderNode1!.geometry?.setValue(CGFloat(self.loadingRadius!), forKey: "radius")
             self.viewfinderNode1!.geometry?.firstMaterial!.diffuse.contents = UIColor(red: 42/255.0, green: 128/255.0, blue: 185/255.0, alpha: 0.7)
@@ -179,7 +183,7 @@ class ViewController: UIViewController, SCNSceneRendererDelegate {
     }
     
     //MARK: Do some stuff
-    func launchSomeAction(nodeToUpdate:NodeClass){
+    func launchSomeAction(_ nodeToUpdate:NodeClass){
         //stuff
         if (selectedNode != nil){
             if(nodeToUpdate.firstColor == true){
@@ -201,7 +205,7 @@ class ViewController: UIViewController, SCNSceneRendererDelegate {
         firstInteractiveNode!.pivot = SCNMatrix4MakeRotation(Float(M_PI_2), 0.0, 1.0, 0.0)
         firstInteractiveNode!.position = SCNVector3(x: 4, y: 0, z: -1)
         
-        firstInteractiveNode?.initWithColors(UIColor.blueColor(), c2: UIColor.yellowColor())
+        firstInteractiveNode?.initWithColors(UIColor.blue, c2: UIColor.yellow)
         firstInteractiveNode!.geometry?.firstMaterial?.diffuse.contents = firstInteractiveNode?.color1
         firstInteractiveNode?.firstColor = true
         
@@ -213,7 +217,7 @@ class ViewController: UIViewController, SCNSceneRendererDelegate {
         secondInteractiveNode!.pivot = SCNMatrix4MakeRotation(Float(M_PI_2), 0.0, 1.0, 0.0)
         secondInteractiveNode!.position = SCNVector3(x: 4, y: 0, z: 1)
         
-        secondInteractiveNode?.initWithColors(UIColor.purpleColor(), c2: UIColor.yellowColor())
+        secondInteractiveNode?.initWithColors(UIColor.purple, c2: UIColor.yellow)
         secondInteractiveNode!.geometry?.firstMaterial?.diffuse.contents = secondInteractiveNode?.color1
         secondInteractiveNode?.firstColor = true
         
@@ -221,25 +225,25 @@ class ViewController: UIViewController, SCNSceneRendererDelegate {
     }
     
     //MARK: Scene Renderer
-    func renderer(aRenderer: SCNSceneRenderer, updateAtTime time: NSTimeInterval){
+    func renderer(_ aRenderer: SCNSceneRenderer, updateAtTime time: TimeInterval){
         
         // Render the scene
-        dispatch_async(dispatch_get_main_queue()) { () -> Void in
+        DispatchQueue.main.async { () -> Void in
             if let mm = self.motionManager, let motion = mm.deviceMotion {
                 let currentAttitude = motion.attitude
                 
                 var roll : Double = currentAttitude.roll
-                if(UIApplication.sharedApplication().statusBarOrientation == UIInterfaceOrientation.LandscapeRight){ roll = -1.0 * (-M_PI - roll)}
+                if(UIApplication.shared.statusBarOrientation == UIInterfaceOrientation.landscapeRight){ roll = -1.0 * (-M_PI - roll)}
                 
                 self.cameraRollNode!.eulerAngles.x = Float(roll)
                 self.cameraPitchNode!.eulerAngles.z = Float(currentAttitude.pitch)
                 self.cameraYawNode!.eulerAngles.y = Float(currentAttitude.yaw)
                 
                 //Checks if the user looks at an interactive node
-                let pFrom = self.camerasNode!.convertPosition(self.viewfinderNode2!.position, toNode: self.scene?.rootNode)
-                let pTo = self.camerasNode!.convertPosition(self.viewfinderNode3!.position, toNode: self.scene?.rootNode)
+                let pFrom = self.camerasNode!.convertPosition(self.viewfinderNode2!.position, to: self.scene?.rootNode)
+                let pTo = self.camerasNode!.convertPosition(self.viewfinderNode3!.position, to: self.scene?.rootNode)
                 
-                let hitNodes = self.scene?.rootNode.hitTestWithSegmentFromPoint(pFrom, toPoint: pTo, options:nil)
+                let hitNodes = self.scene?.rootNode.hitTestWithSegment(from: pFrom, to: pTo, options:nil)
                 var hitNode: SCNNode?
                 for hn in hitNodes! {
                     if hn.node is NodeClass{
@@ -262,7 +266,7 @@ class ViewController: UIViewController, SCNSceneRendererDelegate {
     }
     
     //MARK: Camera Orientation methods
-    override func willAnimateRotationToInterfaceOrientation(toInterfaceOrientation: UIInterfaceOrientation, duration: NSTimeInterval) {
+    override func willAnimateRotation(to toInterfaceOrientation: UIInterfaceOrientation, duration: TimeInterval) {
         let camerasNodeAngles = getCamerasNodeAngle()
         camerasNode!.eulerAngles = SCNVector3Make(Float(camerasNodeAngles[0]), Float(camerasNodeAngles[1]), Float(camerasNodeAngles[2]))
     }
@@ -270,7 +274,7 @@ class ViewController: UIViewController, SCNSceneRendererDelegate {
     func getCamerasNodeAngle() -> [Double] {
         var camerasNodeAngle1: Double! = 0.0
         var camerasNodeAngle2: Double! = 0.0
-        let orientation = UIApplication.sharedApplication().statusBarOrientation.rawValue
+        let orientation = UIApplication.shared.statusBarOrientation.rawValue
         if orientation == 1 {
             camerasNodeAngle1 = -M_PI_2
         } else if orientation == 2 {
@@ -287,5 +291,17 @@ class ViewController: UIViewController, SCNSceneRendererDelegate {
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
+    }
+    
+    override func viewWillLayoutSubviews() {
+        leftSceneView.leftAnchor.constraint(equalTo: self.view.leftAnchor).isActive = true
+        leftSceneView.rightAnchor.constraint(equalTo: self.view.rightAnchor).isActive = true
+        leftSceneView.topAnchor.constraint(equalTo: topLayoutGuide.bottomAnchor).isActive = true
+        leftSceneView.bottomAnchor.constraint(equalTo: self.view.centerYAnchor).isActive = true
+        
+        rightSceneView.leftAnchor.constraint(equalTo: self.view.leftAnchor).isActive = true
+        rightSceneView.rightAnchor.constraint(equalTo: self.view.rightAnchor).isActive = true
+        rightSceneView.topAnchor.constraint(equalTo: self.view.centerYAnchor).isActive = true
+        rightSceneView.bottomAnchor.constraint(equalTo: bottomLayoutGuide.topAnchor).isActive = true
     }
 }
