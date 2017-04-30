@@ -25,8 +25,8 @@ class NodeClass: SCNNode {
 //MARK: View Controller
 class ViewController: UIViewController, SCNSceneRendererDelegate {
 
-    var leftSceneView : SCNView!
-    var rightSceneView : SCNView!
+    var leftSceneView : EquirectangularSceneView!
+    var rightSceneView : EquirectangularSceneView!
     
     var scene : SCNScene?
     
@@ -51,18 +51,21 @@ class ViewController: UIViewController, SCNSceneRendererDelegate {
         super.viewDidLoad()
         //In viewDidLoad we initialize the 3D Space and Cameras
         
-        leftSceneView = SCNView()
+        leftSceneView = EquirectangularSceneView()
         leftSceneView.translatesAutoresizingMaskIntoConstraints = false
         self.view.addSubview(leftSceneView)
         
-        rightSceneView = SCNView()
+        rightSceneView = EquirectangularSceneView()
         rightSceneView.translatesAutoresizingMaskIntoConstraints = false
+        rightSceneView.mainImage = UIImage(named: "Hellbrunn25.jpg")
+        rightSceneView.cameraPosition = GLKQuaternionIdentity
+        rightSceneView.delegate = self
         self.view.addSubview(rightSceneView)
         
         // Create Scene
         scene = SCNScene(named: "Scene.scn")
         leftSceneView?.scene = scene
-        rightSceneView?.scene = scene
+//        rightSceneView?.scene = scene
         
         // Create cameras
         let camX = 0.0 as Float
@@ -71,23 +74,23 @@ class ViewController: UIViewController, SCNSceneRendererDelegate {
         let zFar = 30.0
         
         let leftCamera = SCNCamera()
-        let rightCamera = SCNCamera()
+//        let rightCamera = SCNCamera()
         
         leftCamera.zFar = zFar
-        rightCamera.zFar = zFar
+//        rightCamera.zFar = zFar
         
         let leftCameraNode = SCNNode()
         leftCameraNode.camera = leftCamera
         leftCameraNode.position = SCNVector3(x: camX - 0.000, y: camY, z: camZ)
         
-        let rightCameraNode = SCNNode()
-        rightCameraNode.camera = rightCamera
-        rightCameraNode.position = SCNVector3(x: camX + 0.000, y: camY, z: camZ)
+//        let rightCameraNode = SCNNode()
+//        rightCameraNode.camera = rightCamera
+//        rightCameraNode.position = SCNVector3(x: camX + 0.000, y: camY, z: camZ)
         
         camerasNode = SCNNode()
         camerasNode!.position = SCNVector3(x: camX, y:camY, z:camZ)
         camerasNode!.addChildNode(leftCameraNode)
-        camerasNode!.addChildNode(rightCameraNode)
+//        camerasNode!.addChildNode(rightCameraNode)
         
         let camerasNodeAngles = getCamerasNodeAngle()
         camerasNode!.eulerAngles = SCNVector3Make(Float(camerasNodeAngles[0]), Float(camerasNodeAngles[1]), Float(camerasNodeAngles[2]))
@@ -104,7 +107,7 @@ class ViewController: UIViewController, SCNSceneRendererDelegate {
         scene!.rootNode.addChildNode(cameraYawNode!)
         
         leftSceneView?.pointOfView = leftCameraNode
-        rightSceneView?.pointOfView = rightCameraNode
+//        rightSceneView?.pointOfView = rightCameraNode
         
         // Respond to user head movement. Refreshes the position of the camera 60 times per second.
         motionManager = CMMotionManager()
@@ -114,7 +117,7 @@ class ViewController: UIViewController, SCNSceneRendererDelegate {
         leftSceneView?.delegate = self
         
         leftSceneView?.isPlaying = true
-        rightSceneView?.isPlaying = true
+//        rightSceneView?.isPlaying = true
         
         createviewFinder()
         displayInteractiveNodes()
@@ -261,6 +264,9 @@ class ViewController: UIViewController, SCNSceneRendererDelegate {
                     self.selectedNode = nil
                     self.updateViewFinder(false)
                 }
+                
+                self.rightSceneView.cameraPosition = motion.attitude.quaternion.adjustForOrientation().toGLKQuaternion()
+                
             }
         }
     }
@@ -303,5 +309,40 @@ class ViewController: UIViewController, SCNSceneRendererDelegate {
         rightSceneView.rightAnchor.constraint(equalTo: self.view.rightAnchor).isActive = true
         rightSceneView.topAnchor.constraint(equalTo: self.view.centerYAnchor).isActive = true
         rightSceneView.bottomAnchor.constraint(equalTo: bottomLayoutGuide.topAnchor).isActive = true
+    }
+}
+
+extension CMQuaternion {
+    func toGLKQuaternion() -> GLKQuaternion {
+        return GLKQuaternion(q: (Float(self.x), Float(self.y), Float(self.z), Float(self.w)))
+    }
+    
+    func adjustForOrientation() -> CMQuaternion {
+        //ThreeSixtyPlayer by Alfie Hanssen
+        if(UIApplication.shared.statusBarOrientation == UIInterfaceOrientation.portrait){
+            let radians = -Float( .pi / 2.0)
+            let multiplier = GLKQuaternionMakeWithAngleAndAxis(radians, 1, 0, 0) // Rotate -90 degrees around the X axis
+            let q = GLKQuaternionMultiply(multiplier, self.toGLKQuaternion())
+            
+            return CMQuaternion(x: Double(q.x), y: Double(q.y), z: Double(q.z), w: Double(q.w))
+        }
+        
+        if(UIApplication.shared.statusBarOrientation == UIInterfaceOrientation.landscapeRight){
+            let radians = Float( .pi / 2.0)
+            let multiplier = GLKQuaternionMakeWithAngleAndAxis(radians, 0, 1, 0) // Rotate 90 degrees around the Y axis
+            let q = GLKQuaternionMultiply(multiplier, self.toGLKQuaternion())
+            
+            return CMQuaternion(x: -(Double)(q.y), y: Double(q.x), z: Double(q.z), w: Double(q.w))
+        }
+        
+        if(UIApplication.shared.statusBarOrientation == UIInterfaceOrientation.landscapeLeft){
+            let radians = -Float( .pi / 2.0)
+            let multiplier = GLKQuaternionMakeWithAngleAndAxis(radians, 0, 1, 0) // Rotate 90 degrees around the Y axis
+            let q = GLKQuaternionMultiply(multiplier, self.toGLKQuaternion())
+            
+            return CMQuaternion(x: (Double)(q.y), y: -Double(q.x), z: Double(q.z), w: Double(q.w))
+        }
+        
+        return self
     }
 }

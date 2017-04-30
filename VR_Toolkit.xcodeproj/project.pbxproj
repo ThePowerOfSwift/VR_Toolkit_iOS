@@ -12,6 +12,8 @@
 		C47BEFDD1C4E373B004E4E0C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C47BEFDC1C4E373B004E4E0C /* Assets.xcassets */; };
 		C47BEFE01C4E373B004E4E0C /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C47BEFDE1C4E373B004E4E0C /* LaunchScreen.storyboard */; };
 		C47BEFE81C4E3B86004E4E0C /* Scene.scn in Resources */ = {isa = PBXBuildFile; fileRef = C47BEFE71C4E3B86004E4E0C /* Scene.scn */; };
+		F6EF569D1EB56BE400EEC2F3 /* EquirectangularSceneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6EF569C1EB56BE400EEC2F3 /* EquirectangularSceneView.swift */; };
+		F6EF569F1EB56BFF00EEC2F3 /* Hellbrunn25.jpg in Resources */ = {isa = PBXBuildFile; fileRef = F6EF569E1EB56BFF00EEC2F3 /* Hellbrunn25.jpg */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -22,6 +24,8 @@
 		C47BEFDF1C4E373B004E4E0C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		C47BEFE11C4E373B004E4E0C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C47BEFE71C4E3B86004E4E0C /* Scene.scn */ = {isa = PBXFileReference; lastKnownFileType = file.bplist; path = Scene.scn; sourceTree = "<group>"; };
+		F6EF569C1EB56BE400EEC2F3 /* EquirectangularSceneView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EquirectangularSceneView.swift; sourceTree = "<group>"; };
+		F6EF569E1EB56BFF00EEC2F3 /* Hellbrunn25.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Hellbrunn25.jpg; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -56,7 +60,9 @@
 			children = (
 				C47BEFD51C4E373B004E4E0C /* AppDelegate.swift */,
 				C47BEFD71C4E373B004E4E0C /* ViewController.swift */,
+				F6EF569C1EB56BE400EEC2F3 /* EquirectangularSceneView.swift */,
 				C47BEFE71C4E3B86004E4E0C /* Scene.scn */,
+				F6EF569E1EB56BFF00EEC2F3 /* Hellbrunn25.jpg */,
 				C47BEFDC1C4E373B004E4E0C /* Assets.xcassets */,
 				C47BEFDE1C4E373B004E4E0C /* LaunchScreen.storyboard */,
 				C47BEFE11C4E373B004E4E0C /* Info.plist */,
@@ -127,6 +133,7 @@
 				C47BEFE01C4E373B004E4E0C /* LaunchScreen.storyboard in Resources */,
 				C47BEFE81C4E3B86004E4E0C /* Scene.scn in Resources */,
 				C47BEFDD1C4E373B004E4E0C /* Assets.xcassets in Resources */,
+				F6EF569F1EB56BFF00EEC2F3 /* Hellbrunn25.jpg in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -139,6 +146,7 @@
 			files = (
 				C47BEFD81C4E373B004E4E0C /* ViewController.swift in Sources */,
 				C47BEFD61C4E373B004E4E0C /* AppDelegate.swift in Sources */,
+				F6EF569D1EB56BE400EEC2F3 /* EquirectangularSceneView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
